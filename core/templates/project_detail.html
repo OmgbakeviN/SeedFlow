@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div>
+    <h2>{{ project.entrepreneur.username }}</h2>
+    <p>Soumis le : {{ project.created_at|date:"d M Y" }}</p>
+
+    {% if project.entrepreneur.profile_picture %}
+      <img src="{{ project.entrepreneur.profile_picture.url }}" alt="Photo de profil" style="width:100px; height:100px; border-radius:50%;">
+    {% else %}
+      <img src="/media/images/Default-Profile-Picture-Download-PNG-Image.png" alt="Photo de profil par défaut" style="width:100px; height:100px; border-radius:50%;">
+    {% endif %}
+  </div>
+
+  <h1>{{ project.name }}</h1>
+  {% if project.image %}
+  <img src="{{ project.image.url }}" class="card-img-top" alt="Image du projet">
+  {% endif %}
+  {% if user.is_authenticated and user.role == "investisseur" %}
+    <a href="{% url 'investment' project.id %}" class="btn btn-success">Investir</a>
+  {% endif %}
+
+  <p><strong>Description:</strong> {{ project.description }}</p>
+  <p><strong>Montant recherché:</strong> {{ project.amount_needed }} FCFA</p>
+  <p><strong>Statut:</strong> {% if project.is_approved %} ✅ Approuvé {% else %} ⏳ En attente {% endif %}</p>
+
+  {% if project.document %}
+    <p><strong>Documentation:</strong> 
+      <a href="{{ project.document.url }}" class="btn btn-primary" download>Télécharger 📄</a>
+    </p>
+  {% else %}
+    <p>Aucune documentation disponible.</p>
+  {% endif %}
+
+  
+{% endblock %}

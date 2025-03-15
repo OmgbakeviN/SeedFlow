@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Investisseur{% endblock %}
+
+{% block content %}
+<div class="container text-center">
+    <!-- Affichage de la photo de profil -->
+    {% if user.profile_picture %}
+    <img src="{{ user.profile_picture.url }}" alt="Photo de profil" class="rounded-circle" width="150" height="150">
+    {% else %}
+    <img src="/media/images/Default-Profile-Picture-Download-PNG-Image.png" alt="Photo de profil par défaut" class="rounded-circle" width="150" height="150">
+    {% endif %}
+
+    <h1 class="mt-3">Bienvenue, {{ user.username }} !</h1>
+    <a href="{% url 'update_profile' %}" class="btn btn-outline-primary mt-2">Modifier le profil</a>
+</div>
+<hr>
+
+<h3>Projets dans lesquels vous avez investi</h3>
+
+<div class="project-list">
+    {% for investment in investments %}
+        <div class="project-card">
+            <h4>{{ investment.project.name }}</h4>
+            {% if investment.project.image %}
+            <img src="{{ investment.project.image.url }}" class="card-img-top" alt="Image du projet">
+            {% endif %}
+            <p><strong>Montant investi :</strong> {{ investment.amount }} FCFA</p>
+            <a href="{% url 'project_detail' investment.project.id %}" class="btn btn-info">Voir</a>
+        </div>
+        <hr>
+    {% empty %}
+        <p>Vous n'avez encore investi dans aucun projet.</p>
+    {% endfor %}
+</div>
+
+{% endblock %}

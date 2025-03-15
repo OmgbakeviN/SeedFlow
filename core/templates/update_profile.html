@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Modifier votre profil</h2>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Mettre à jour</button>
+    </form>
+
+    {% if user.is_entrepreneur %}
+        <a class="btn btn-primary mt-3" href="{% url 'entrepreneur_dashboard' %}">Retour au Dashboard</a>
+    {% elif user.is_investisseur %}
+        <a class="btn btn-primary mt-3" href="{% url 'investor_dashboard' %}">Retour au Dashboard</a>
+    {% endif %}
+</div>
+{% endblock %}

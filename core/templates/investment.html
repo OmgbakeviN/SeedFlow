@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>INVESTICEMENT</h1>
+
+<form action="" method="post">
+    {% csrf_token %}
+    {{form.as_p}}
+    <button type="submit" class="btn btn-primary">Investir</button>
+</form>
+
+{% if messages %}
+    {% for message in messages %}
+        <p class="{{message.tag}}">{{message}}</p>
+    {% endfor %}
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC</title>
+</head>
+<body>
+    
+<h2>Vérification d'identité (KYC)</h2>
+<p>Veuillez téléverser une photo claire et lisible de votre carte d'identité.</p>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Envoyer</button>
+</form>
+
+
+</body>
+</html>
