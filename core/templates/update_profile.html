@@ -4,16 +4,36 @@
 <div class="container">
     <h2>Modifier votre profil</h2>
 
-    <form method="post" enctype="multipart/form-data">
+    <!-- Affichage des messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Formulaire pour modifier le nom d'utilisateur -->
+    <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Mettre à jour</button>
+        {{ username_form.as_p }}
+        <button type="submit" name="update_username" class="btn btn-primary">Mettre à jour le nom</button>
     </form>
 
+    <hr>
+
+    <!-- Formulaire pour modifier la photo de profil -->
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ picture_form.as_p }}
+        <button type="submit" name="update_profile_picture" class="btn btn-primary">Mettre à jour la photo</button>
+    </form>
+
+    <hr>
+
+    <!-- Bouton de retour au Dashboard -->
     {% if user.is_entrepreneur %}
-        <a class="btn btn-primary mt-3" href="{% url 'entrepreneur_dashboard' %}">Retour au Dashboard</a>
+        <a class="btn btn-secondary mt-3" href="{% url 'entrepreneur_dashboard' %}">Retour au Dashboard</a>
     {% elif user.is_investisseur %}
-        <a class="btn btn-primary mt-3" href="{% url 'investor_dashboard' %}">Retour au Dashboard</a>
+        <a class="btn btn-secondary mt-3" href="{% url 'investor_dashboard' %}">Retour au Dashboard</a>
     {% endif %}
 </div>
 {% endblock %}

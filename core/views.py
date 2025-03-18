@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_list_or_404, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Project, Investment, Investment
-from .forms import ProjectForm, SignupForm, KYCUploadForm ,ProfilePictureForm, UpdateProfileForm, InvestmentForm
+from .forms import ProjectForm, SignupForm, KYCUploadForm ,ProfilePictureForm, UpdateProfileForm, InvestmentForm, UpdateUsernameForm, UpdateProfilePictureForm
 from core.models import Project
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm
@@ -181,18 +181,32 @@ def logout_view(request):
     return redirect("login")  # Redirige vers la page de connexion après déconnexion
 
 
+
 @login_required
 def update_profile(request):
     if request.method == "POST":
-        form = UpdateProfileForm(request.POST, request.FILES, instance=request.user)
-        if form.is_valid():
-            user = form.save()
-            update_session_auth_hash(request, user)  # Garde l'utilisateur connecté après la mise à jour du mot de passe
-            return redirect("entrepreneur_dashboard")
-    else:
-        form = UpdateProfileForm(instance=request.user)
+        if "update_username" in request.POST:  # Si l'utilisateur modifie son nom
+            username_form = UpdateUsernameForm(request.POST, instance=request.user)
+            if username_form.is_valid():
+                username_form.save()
+                messages.success(request, "Nom d'utilisateur mis à jour avec succès.")
+                return redirect("update_profile")
 
-    return render(request, "update_profile.html", {"form": form})
+        elif "update_profile_picture" in request.POST:  # Si l'utilisateur met à jour sa photo
+            picture_form = UpdateProfilePictureForm(request.POST, request.FILES, instance=request.user)
+            if picture_form.is_valid():
+                picture_form.save()
+                messages.success(request, "Photo de profil mise à jour avec succès.")
+                return redirect("update_profile")
+
+    else:
+        username_form = UpdateUsernameForm(instance=request.user)
+        picture_form = UpdateProfilePictureForm(instance=request.user)
+
+    return render(request, "update_profile.html", {
+        "username_form": username_form,
+        "picture_form": picture_form
+    })
 
 
 

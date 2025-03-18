@@ -107,3 +107,13 @@ class InvestmentForm(forms.Form):
         label= "service",
         widget=forms.Select(attrs={"class":"form-control"})
     )
+
+class UpdateUsernameForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["username"]
+
+class UpdateProfilePictureForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["profile_picture"]
