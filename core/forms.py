@@ -1,5 +1,5 @@
 from django import forms
-from .models import Project, User, Investment
+from .models import Project, User, Investment, Rating
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 
@@ -117,3 +117,13 @@ class UpdateProfilePictureForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ["profile_picture"]
+
+
+class RatingForm(forms.ModelForm):
+    class Meta:
+        model = Rating
+        fields = ['stars', 'comment']
+        widgets = {
+            'stars': forms.Select(choices=[(i, f"{i} ⭐") for i in range(1, 6)], attrs={'class': 'form-control'}),
+            'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Laissez un commentaire...'}),
+        }

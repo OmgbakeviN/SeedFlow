@@ -1,7 +1,7 @@
 from django.urls import path, include
 from core.views import home
 from . import views
-from .views import project_list, create_project, project_detail,investor_dashboard, entrepreneur_dashboard, custom_login, signup, upload_kyc, kyc_pending, logout_view, update_profile, update_profile, investment
+from .views import project_list, create_project, project_detail,investor_dashboard, entrepreneur_dashboard, custom_login, signup, upload_kyc, kyc_pending, logout_view, update_profile, update_profile, investment, rate_project
 from django.contrib.auth.views import LoginView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -22,6 +22,7 @@ urlpatterns = [
     path("intveestor/dashboard/", investor_dashboard, name="investor_dashboard"),
     path("update-prnofile/", update_profile, name="update_profile"),
     path("payment/<int:project_id>",investment, name="investment"),
+    path("projects/<int:project_id>/rate",rate_project,name='rate_project'),
     path("logout/", logout_view, name="logout"),
 ]
 

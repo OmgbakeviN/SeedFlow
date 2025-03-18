@@ -67,3 +67,16 @@ class Investment(models.Model):
         return f"{self.investor.username} a investi {self.amount} FCFA dans {self.project.name}"
 
 
+class Rating(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='ratings')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    stars = models.IntegerField(choices=[(i, i) for i in range(1, 6)], null=True, blank=True)
+    comment = models.TextField(null=True, blank=True)
+    liked = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('project', 'user')  # Un utilisateur ne peut donner qu'une note par projet
+
+    def __str__(self):
+        return f"{self.user.username} - {self.stars}⭐ - {self.project.name}"

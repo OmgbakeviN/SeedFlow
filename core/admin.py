@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, Project, Investment
+from .models import User, Project, Investment, Rating
 # Register your models here.
 
 class CustomUserAdmin(admin.ModelAdmin):
@@ -43,3 +43,4 @@ class ProjectAdmin(admin.ModelAdmin):
 
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(Investment)
+admin.site.register(Rating)

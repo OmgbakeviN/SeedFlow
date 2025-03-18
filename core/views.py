@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect, get_list_or_404, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Project, Investment, Investment
-from .forms import ProjectForm, SignupForm, KYCUploadForm ,ProfilePictureForm, UpdateProfileForm, InvestmentForm, UpdateUsernameForm, UpdateProfilePictureForm
-from core.models import Project
+from .models import Project, Investment, Investment, Rating
+from .forms import ProjectForm, SignupForm, KYCUploadForm ,ProfilePictureForm, UpdateProfileForm, InvestmentForm, UpdateUsernameForm, UpdateProfilePictureForm, RatingForm
+from core.models import Project, Rating
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.contrib import messages
 from django.conf import settings
 import requests
@@ -424,3 +424,40 @@ def investment(request, project_id):
         form = InvestmentForm()
 
     return render(request, 'investment.html', {'form': form, 'project': project})
+
+
+@login_required
+@kyc_required
+def like_project(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    rating, created = Rating.objects.get_or_create(user=request.user, project=project)
+    
+    if rating.liked:
+        rating.liked = False
+    else:
+        rating.liked = True
+    rating.save()
+    
+    return JsonResponse({'likes_count': project.rating_set.filter(liked=True).count()})
+
+@login_required
+@kyc_required
+def rate_project(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    rating_instance = Rating.objects.filter(project=project, user=request.user).first()
+
+    if request.method == "POST":
+        form = RatingForm(request.POST, instance=rating_instance)
+        if form.is_valid():
+            rating = form.save(commit=False)
+            rating.project = project
+            rating.user = request.user
+            rating.save()
+            messages.success(request, "Votre note a été enregistrée avec succès !")
+            return redirect('project_detail', project_id=project.id)
+    else:
+        form = RatingForm(instance=rating_instance)
+
+    return render(request, 'rate_project.html', {'form': form, 'project': project})
+
+

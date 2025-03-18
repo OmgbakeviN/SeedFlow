@@ -19,6 +19,10 @@
   {% if user.is_authenticated and user.role == "investisseur" %}
     <a href="{% url 'investment' project.id %}" class="btn btn-success">Investir</a>
   {% endif %}
+  {% if user.is_authenticated %}
+    <a href="{% url 'rate_project' project.id %}" class="btn btn-warning mt-3">Noter ce projet ⭐</a>
+{% endif %}
+
 
   <p><strong>Description:</strong> {{ project.description }}</p>
   <p><strong>Montant recherché:</strong> {{ project.amount_needed }} FCFA</p>
