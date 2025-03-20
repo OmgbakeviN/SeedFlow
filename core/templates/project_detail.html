@@ -35,6 +35,48 @@
   {% else %}
     <p>Aucune documentation disponible.</p>
   {% endif %}
+  
+  <!-- comments of project -->
+  <h3 class="mt-5">Avis et Notes</h3>
+
+  {% if project.ratings.all %}
+      <div class="list-group">
+          {% for rating in project.ratings.all %}
+              <div class="list-group-item">
+                  <div class="d-flex align-items-center">
+                      {% if rating.user.profile_picture %}
+                          <img src="{{ rating.user.profile_picture.url }}" alt="Photo de profil" style="width:50px; height:50px; border-radius:50%;" class="me-3">
+                      {% else %}
+                          <img src="/media/images/Default-Profile-Picture-Download-PNG-Image.png" alt="Photo de profil par défaut" style="width:50px; height:50px; border-radius:50%;" class="me-3">
+                      {% endif %}
+                      <div>
+                          <h6 class="mb-0">{{ rating.user.username }}</h6>
+                          <small class="text-muted">{{ rating.created_at|date:"d M Y H:i" }}</small>
+                      </div>
+                  </div>
+                  
+                  <!-- Affichage des étoiles -->
+                  <div class="mt-2">
+                      {% for i in "12345"|make_list %}
+                          {% if forloop.counter <= rating.stars %}
+                              <span class="text-warning">&#9733;</span>
+                          {% else %}
+                              <span class="text-muted">&#9733;</span>
+                          {% endif %}
+                      {% endfor %}
+                  </div>
+  
+                  <!-- Affichage du commentaire -->
+                  {% if rating.comment %}
+                      <p class="mt-2">{{ rating.comment }}</p>
+                  {% endif %}
+              </div>
+          {% endfor %}
+      </div>
+  {% else %}
+      <p class="text-muted">Aucun avis pour ce projet pour le moment.</p>
+  {% endif %}
+  
 
   
 {% endblock %}
