@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Sum
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth import get_user_model 
 # Create your models here.
@@ -49,10 +50,22 @@ class Project(models.Model):
     description = models.TextField()
     objectives = models.TextField()
     amount_needed = models.DecimalField(max_digits=10, decimal_places=2)
+    amount_collected = models.DecimalField(max_digits=15, decimal_places=2, default=0)  # Somme déjà collectée
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     document = models.FileField(upload_to='media/projects/docs/', blank=True, null=True)
     is_approved = models.BooleanField(default=False)  # Validation par un modérateur
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def amount_collected(self):
+        total = self.investment_set.aggregate(total_invested=Sum('amount'))['total_invested']
+        return total if total else 0  # Si aucun investissement, retourne 0
+    
+    #bar de progression
+    def progress_percentage(self):
+        if self.amount_needed > 0:
+            return min((self.amount_collected() / self.amount_needed) * 100, 100)  # Évite de dépasser 100%
+        return 0
+
 
     def __str__(self):
         return self.name 
@@ -74,6 +87,10 @@ class Rating(models.Model):
     comment = models.TextField(null=True, blank=True)
     liked = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('project', 'user')  
+        ordering = ['-created_at']  # Les avis les plus récents en premier
 
     class Meta:
         unique_together = ('project', 'user')  # Un utilisateur ne peut donner qu'une note par projet
