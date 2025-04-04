@@ -28,7 +28,7 @@
   <p><strong>Montant recherché:</strong> {{ project.amount_needed }} FCFA</p>
   <p><strong>Montant collecté :</strong> {{ project.amount_collected }} FCFA</p>  
   <!-- Barre de progression -->
-  <div class="progress mt-3" style="height: 25px;">
+  <!-- <div class="progress mt-3" style="height: 25px;">
     <div class="progress-bar progress-bar-striped bg-success" 
         role="progressbar" 
         style="width: {{ project.progress_percentage }}%;"
@@ -37,7 +37,7 @@
         aria-valuemax="100">
         {{ project.progress_percentage|floatformat:0 }}%
     </div>
-  </div>
+  </div> -->
   <p><strong>Statut:</strong> {% if project.is_approved %} ✅ Approuvé {% else %} ⏳ En attente {% endif %}</p>
 
   {% if project.document %}
