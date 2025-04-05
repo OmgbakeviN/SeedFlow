@@ -11,7 +11,7 @@
     <img src="/media/images/Default-Profile-Picture-Download-PNG-Image.png" alt="Photo de profil par défaut" class="rounded-circle" width="150" height="150">
     {% endif %}
 
-    <h1 class="mt-3">Bienvenue, {{ user.username }} !</h1>
+    <h1 class="mt-3 text-warning">Bienvenue, {{ user.username }} !</h1>
     <a href="{% url 'update_profile' %}" class="btn btn-outline-primary mt-2">Modifier le profil</a>
 </div>
 <hr>
@@ -30,7 +30,7 @@
         </div>
         <hr>
     {% empty %}
-        <p>Vous n'avez encore investi dans aucun projet.</p>
+        <p class="text-danger text-uppercase font-weight-bold">Vous n'avez encore investi dans aucun projet.</p>
     {% endfor %}
 </div>
 
