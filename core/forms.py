@@ -18,9 +18,76 @@ class ProjectForm(forms.ModelForm):
         self.fields['document'].widget.attrs.update({'class': 'form-control'})
 
 class SignupForm(UserCreationForm):
-    username = forms.CharField(max_length=150, required=True, help_text="Obligatoire. 150 caractères max.")
-    profile_picture = forms.ImageField(required=False)  # 📸 Ajout de l'upload d'image
-
+    username = forms.CharField(
+        max_length=150, 
+        required=True, 
+        help_text="Obligatoire. 150 caractères max.",
+        widget=forms.TextInput(attrs={
+            "class": "w-full px-4 py-2 mt-1 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+            "placeholder": "Nom d'utilisateur"
+        })
+    )
+    
+    profile_picture = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={  # Changé de TextInput à FileInput pour les fichiers
+            "class": "w-full px-4 py-2 mt-1 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+        })
+    )
+    
+    first_name = forms.CharField(
+        required=True,
+        widget=forms.TextInput(attrs={
+            "class": "w-full px-4 py-2 mt-1 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+            "placeholder": "Prénom"
+        })
+    )
+    
+    last_name = forms.CharField(
+        required=True,
+        widget=forms.TextInput(attrs={
+            "class": "w-full px-4 py-2 mt-1 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+            "placeholder": "Nom"
+        })
+    )
+    
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={
+            "class": "w-full px-4 py-2 mt-1 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+            "placeholder": "email@exemple.com"
+        })
+    )
+    
+    phone_number = forms.CharField(
+        required=True,
+        widget=forms.TextInput(attrs={
+            "class": "w-full px-4 py-2 mt-1 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+            "placeholder": "77 123 45 67"
+        })
+    )
+    
+    role = forms.ChoiceField(
+        choices=User.ROLE_CHOICES,  # Supposant que vous avez défini ROLE_CHOICES dans votre modèle User
+        widget=forms.Select(attrs={
+            "class": "w-full px-4 py-2 mt-1 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        })
+    )
+    
+    password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            "class": "w-full px-4 py-2 mt-1 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+            "placeholder": "Mot de passe"
+        })
+    )
+    
+    password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            "class": "w-full px-4 py-2 mt-1 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+            "placeholder": "Confirmation du mot de passe"
+        })
+    )
+    
     class Meta:
         model = User
         fields = ["username", "first_name", "last_name", "email", "phone_number", "role", "profile_picture", "password1", "password2"]

@@ -1,20 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KYC</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vérification KYC</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    
-<h2>Vérification d'identité (KYC)</h2>
-<p>Veuillez téléverser une photo claire et lisible de votre carte d'identité.</p>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Envoyer</button>
-</form>
+<body class="bg-gradient-to-br from-green-100 via-yellow-50 to-white min-h-screen flex items-center justify-center px-4">
 
+  <div class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md border-t-4 border-green-600">
+    <div class="text-center mb-6">
+      <h2 class="text-2xl font-bold text-green-700">🔒 Vérification d'identité</h2>
+      <p class="text-gray-600 mt-2">Veuillez téléverser une photo claire et lisible de votre carte d'identité.</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="space-y-4">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit"
+              class="w-full bg-green-600 text-white py-2 px-4 rounded-xl hover:bg-green-700 transition duration-300">
+        ✅ Envoyer
+      </button>
+    </form>
+
+    <div class="mt-6 text-center text-sm text-gray-500">
+      Vos données sont protégées et ne seront utilisées que pour des fins de vérification.
+    </div>
+  </div>
 
 </body>
 </html>
