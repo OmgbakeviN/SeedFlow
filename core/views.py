@@ -211,219 +211,165 @@ def update_profile(request):
 
 
 
-# APPLICATION_KEY = settings.MESOMB_APPLICATION_KEY
-# ACCESS_KEY = settings.MESOMB_ACCESS_KEY
-# SECRET_KEY = settings.MESOMB_SECRET_KEY
 
-# MESOMB_URL = "https://mesomb.hachther.com/api/v1.1/payment/collect/"
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib import messages
+from django.conf import settings
+from pymesomb.operations import PaymentOperation
+import uuid
+from requests.exceptions import Timeout
+from decimal import Decimal
 
-# import time
-
-# # def generate_mesomb_signature(data):
-# #     """Generate HMAC signature for MeSomb request"""
-# #     timestamp = str(int(time.time()))
-# #     message = f"{ACCESS_KEY}:{data['amount']}:{data['payer']}:{data['service']}:{data['country']}"
-# #     signature = hmac.new(SECRET_KEY.encode(), message.encode(), hashlib.sha1).digest()
-# #     return base64.b64encode(signature).decode(), timestamp
-
-# def generate_mesomb_signature(data):
-#     """Generate a valid HMAC signature for MeSomb"""
-#     timestamp = str(int(time.time()))  # Ensure timestamp is an integer string
-
-#     # Ensure all fields are in the correct order
-#     elements = [
-#         ACCESS_KEY,
-#         timestamp,
-#         str(data["amount"]),  # Convert to string
-#         data["payer"],
-#         data["service"],
-#         data["country"],
-#     ]
-    
-#     message = ":".join(elements)  # Join elements with a colon (:)
-
-#     # Generate HMAC-SHA1 signature
-#     signature = hmac.new(SECRET_KEY.encode(), message.encode(), hashlib.sha1).digest()
-#     signature_b64 = base64.b64encode(signature).decode() 
-#     return signature_b64, timestamp  # Return signature & timestamp
-
-# @login_required
-# @kyc_required
 # def investment(request, project_id):
-#     project = get_object_or_404 (Project,id=project_id)
-    
-#     if request.method == "POST":
+#     project = get_object_or_404(Project, id=project_id)
+#     form = InvestmentForm(request.POST or None)
+
+#     if request.method == 'POST':
 #         form = InvestmentForm(request.POST)
 #         if form.is_valid():
-#             amount = form.cleaned_data['amount']
-#             phone_number = form.cleaned_data['phone_number']
+#             amount = float(form.cleaned_data['amount'])
 #             service = form.cleaned_data['service']
-            
-#             timestamp = str(int(time.time()))
-#             data = {
-#                 'payer': phone_number,
-#                 'amount': amount,
-#                 'fees': True,
-#                 'service': service,
-#                 'currency': 'XAF',
-#                 'message': "Project Payment",
-#                 'country':'CM'
-#             }
+#             payer = form.cleaned_data['phone_number']
 
-#             signature, timestamp = generate_mesomb_signature(data)
-
-#             headers = {
-#                 "X-MeSomb-Application": APPLICATION_KEY,
-#                 "X-MeSomb-AccessKey": ACCESS_KEY,
-#                 "X-MeSomb-Signature": signature,
-#                 "X-MeSomb-Timestamp": timestamp,
-#                 "Content-Type": "application/json"
-#             }
-
-#             print("debug: headers being sent:", headers)
-#             print("debug: payload being sent:", data)
-
-#             # try:
-#             #     response = requests.post(MESOMB_URL, json=data, headers=headers)
-#             #     response_data = response.json()
-
-#             #     if response_data.get("success", False):
-#             #         # Save investment if transaction is successful
-#             #         investment = Investment.objects.create(
-#             #             investor=request.user,
-#             #             project=project,
-#             #             amount=amount
-#             #         )
-#             #         investment.save()
-
-#             #         messages.success(request, f"Votre investissement de {amount} FCFA a été effectué avec succès!")
-#             #         return redirect('project_detail', project_id=project.id)
-#             #     else:
-#             #         messages.error(request, f"Échec du paiement: {response_data.get('message', 'Erreur inconnue')}")
-            
-#             # except requests.exceptions.RequestException as e:
-#             #     messages.error(request, f"Erreur de connexion: {str(e)}")
-
+#             operation = PaymentOperation(
+#                 settings.MESOMB_APP_KEY,
+#                 settings.MESOMB_ACCESS_KEY,
+#                 settings.MESOMB_SECRET_KEY
+#             )
 
 #             try:
-#                 response = requests.post(MESOMB_URL, json=data, headers=headers)
-#                 response_data = response.json()
+#                 response = operation.make_collect(
+#                     amount=amount,
+#                     service=service,
+#                     payer=payer,
+#                 )
 
-#                 print("DEBUG: MeSomb Response:", response_data)  # Add this line
+#                 print("📌 MeSomb Response:", response)
 
-#                 if response_data.get("success", False):
-#                     # Save investment if transaction is successful
-#                     investment = Investment.objects.create(
-#                         investor=request.user,
-#                         project=project,
-#                         amount=amount
-#                     )
-#                     investment.save()
-
-#                     messages.success(request, f"Votre paiement de {amount} FCFA a été collecté avec succès!")
-#                     return redirect('project_detail', project_id=project.id)
+#                 if response.is_operation_success() and response.is_transaction_success():
+#                     payment_status = "success"
+#                     success_message = "✅ Payment successful!"
 #                 else:
-#                     error_message = response_data.get("message", "Erreur inconnue")  # Extract error message
-#                     messages.error(request, f"Échec du paiement: {error_message}")
+#                     payment_status = "failed"
+#                     success_message = "❌ Payment failed. Try again."
 
-#             except requests.exceptions.RequestException as e:
-#                 messages.error(request, f"Erreur de connexion: {str(e)}")
+#                 transaction = Investment.objects.create(
+#                     project=project,
+#                     amount=amount,
+#                     service=service,
+#                     payer=payer,
+#                     status=payment_status,
+#                     transaction_id=str(uuid.uuid4()),
+#                     investor=request.user
+#                 )
+#                 print(f"📌 Transaction Saved - Status: {payment_status}, ID: {transaction}")
 
-#     else:
-#         form = InvestmentForm()
+#                 if payment_status == "success":
+#                     project.amount_collected += amount
+#                     project.save(update_fields=['amount_collected'])
+#                     print("✅ Project Updated - Amount Collected:", project.amount_collected)
 
-#     return render(request, 'investment.html', {'form': form, 'project': project})
+#                 messages.success(request, success_message)
+#                 return redirect('project_detail', project_id=project_id)
 
+#             except Timeout:
+#                 print("⏱ Payment timed out after 2 minutes.")
+#                 Investment.objects.create(
+#                     project=project,
+#                     amount=amount,
+#                     service=service,
+#                     payer=payer,
+#                     status="Failed",
+#                     transaction_id=str(uuid.uuid4()),
+#                     investor=request.user
+#                 )
+#                 messages.error(request, "❌ Payment failed: Timeout after 2 minutes.")
+#                 return render(request, 'investment.html', {'project': project, 'form': form})
 
+#             except Exception as e:
+#                 print("❌ Payment Error:", str(e))
+#                 Investment.objects.create(
+#                     project=project,
+#                     amount=amount,
+#                     service=service,
+#                     payer=payer,
+#                     status="Failed",
+#                     transaction_id=str(uuid.uuid4()),
+#                     investor=request.user
+#                 )
+#                 print(f"⚠️ Transaction Saved with Error - ID: {transaction}")
+#                 messages.error(request, f"❌ Payment Error: {str(e)}")
+#                 return render(request, 'investment.html', {'project': project, 'form': form})
 
-import requests
-from django.conf import settings  # Import Django settings
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .models import Investment, Project
-from .forms import InvestmentForm
+#     return render(request, 'investment.html', {'project': project, 'form': form})
 
-# Load API keys from Django settings
-APPLICATION_KEY = settings.MESOMB_APPLICATION_KEY
-
-MESOMB_URL = "https://mesomb.hachther.com/api/v1.1/payment/online/"  # Matches PHP script
-
-@login_required
 def investment(request, project_id):
     project = get_object_or_404(Project, id=project_id)
+    form = InvestmentForm(request.POST or None)
 
     if request.method == 'POST':
         form = InvestmentForm(request.POST)
         if form.is_valid():
-            amount = form.cleaned_data['amount']
-            phone_number = form.cleaned_data['phone_number']
+            amount = Decimal(form.cleaned_data['amount'])
             service = form.cleaned_data['service']
+            payer = form.cleaned_data['phone_number']
 
-            # Prepare request payload
-            data = {
-                "payer": phone_number,
-                "amount": amount,
-                "fees": True,
-                "service": service,
-                "currency": "XAF",
-                "message": "Project Payment",
-                "country": "CM"
-            }
+            operation = PaymentOperation(
+                settings.MESOMB_APP_KEY,
+                settings.MESOMB_ACCESS_KEY,
+                settings.MESOMB_SECRET_KEY
+            )
 
-            # Headers (No signature needed)
-            headers = {
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-                "User-Agent": "Mozilla",
-                "X-MeSomb-Application": APPLICATION_KEY  # Only Application Key needed
-            }
-
-            # Debugging print
-            print("DEBUG: Headers being sent:", headers)
-            print("DEBUG: Payload being sent:", data)
-
-            # Send request to MeSomb
             try:
-                response = requests.post(MESOMB_URL, json=data, headers=headers)
+                response = operation.make_collect(
+                    amount=amount,
+                    service=service,
+                    payer=payer,
+                )
 
-                # Debugging print: raw response
-                print("DEBUG: Raw MeSomb Response:", response.text)
+                print("📌 MeSomb Response:", response)
 
-                # Handle empty response
-                try:
-                    response_data = response.json()
-                except ValueError:
-                    print("DEBUG: Empty or invalid JSON response from MeSomb")  # Debugging
-                    messages.error(request, "Erreur de connexion: Réponse invalide de MeSomb")
-                    return redirect('project_detail', project_id=project.id)
-
-                # Debugging print: parsed JSON response
-                print("DEBUG: Parsed MeSomb Response:", response_data)
-
-                if response.status_code == 200 and response_data.get("success", False):
-                    # Save investment if transaction is successful
-                    investment = Investment.objects.create(
-                        investor=request.user,
+                # ✅ STRICT success check
+                if response.is_operation_success() and response.is_transaction_success():
+                    # Create only if payment succeeded
+                    Investment.objects.create(
                         project=project,
-                        amount=amount
+                        amount=amount,
+                        service=service,
+                        payer=payer,
+                        status='success',
+                        transaction_id=str(uuid.uuid4()),
+                        investor=request.user
                     )
-                    investment.save()
 
-                    messages.success(request, f"Votre paiement de {amount} FCFA a été collecté avec succès!")
-                    return redirect('project_detail', project_id=project.id)
+                    project.amount_collected += amount
+                    project.save(update_fields=['amount_collected'])
+
+                    print("✅ Project Updated - Amount Collected:", project.amount_collected)
+                    messages.success(request, "✅ Payment successful!")
+                    return redirect('project_detail', project_id=project_id)
+
                 else:
-                    error_message = response_data.get("message", "Erreur inconnue")
-                    messages.error(request, f"Échec du paiement: {error_message}")
+                    # ❌ Payment failed, do NOT create an Investment record
+                    print("❌ Payment failed. Transaction NOT saved.")
+                    messages.error(request, "❌ Payment failed. Try again.")
+                    return render(request, 'investment.html', {'project': project, 'form': form})
 
-            except requests.exceptions.RequestException as e:
-                print("DEBUG: Connection Error:", str(e))  # Debugging
-                messages.error(request, f"Erreur de connexion: {str(e)}")
+            except Timeout:
+                print("⏱ Payment timed out after 2 minutes.")
+                messages.error(request, "❌ Payment failed: Timeout after 2 minutes.")
+                return render(request, 'investment.html', {'project': project, 'form': form})
 
-    else:
-        form = InvestmentForm()
+            except Exception as e:
+                print("❌ Payment Error:", str(e))
+                messages.error(request, f"❌ Payment Error: {str(e)}")
+                return render(request, 'investment.html', {'project': project, 'form': form})
 
-    return render(request, 'investment.html', {'form': form, 'project': project})
+    return render(request, 'investment.html', {'project': project, 'form': form})
+
+
+
+
 
 
 @login_required

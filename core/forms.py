@@ -154,8 +154,8 @@ class UpdateProfileForm(forms.ModelForm):
     
 class InvestmentForm(forms.Form):
     amount = forms.IntegerField(
-        min_value= 10000, 
-        label= "entrez un montant plus grand que 10000FCFA",
+        min_value= 10, 
+        label= "entrez un montant plus grand que 10FCFA",
         widget=forms.NumberInput(attrs={"class":"form-control", "placeholder":"entrez le montant"})
     )
     phone_number = forms.CharField(
